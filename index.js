@@ -1,53 +1,33 @@
-// index.js (Tu código en Railway)
+// server.js (o index.js en tu backend de Railway)
 
-import express from 'express';
-// Necesitas instalar esta librería en Railway: npm install @supabase/supabase-js
-import { createClient } from '@supabase/supabase-js';
-
+const express = require('express');
 const app = express();
-app.use(express.json());
+const supabaseAdmin = require('./supabaseClientAdmin'); // IMPORTA EL CLIENTE ADMIN
 
-// --- ACCESO SEGURO A LAS CLAVES ---
-// Las claves se leen de las variables de entorno de Railway
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+// ... (configuración de express.json, cors, etc.)
 
-// Creador del cliente con privilegios de ADMINISTRADOR (ignora RLS)
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY);
+app.post('/api/tarea-admin/eliminar-cuenta', async (req, res) => {
+    const { user_id } = req.body;
 
-// --- ENDPOINT PARA TAREAS SENSIBLES ---
-// Esta será la URL que llamará tu frontend
-app.post('/api/tarea-admin/buscar-usuario', async (req, res) => {
+    if (!user_id) {
+        return res.status(400).json({ error: 'Falta el ID del usuario.' });
+    }
+
     try {
-        // En el backend, siempre debes verificar la autenticación del usuario llamando (ej: con un token JWT)
-        // Por simplicidad, aquí solo demostraremos el acceso a la DB.
-        const { userId } = req.body;
+        // Usa supabaseAdmin, no el cliente normal.
+        const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
-        if (!userId) {
-            return res.status(400).json({ error: 'Falta el ID de usuario.' });
+        if (error) {
+            console.error('Error de Supabase Admin:', error.message);
+            return res.status(500).json({ error: 'Fallo al eliminar el usuario en Supabase.', details: error.message });
         }
 
-        // ⚠️ ACCESO ADMINISTRATIVO: Usamos supabaseAdmin, que puede leer CUALQUIER perfil
-        const { data: profile, error } = await supabaseAdmin
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', userId)
-            .single();
-
-        if (error) throw error;
-
-        res.status(200).json({
-            status: 'success',
-            message: 'Datos del perfil obtenidos con privilegios de administrador',
-            profile: profile
-        });
+        return res.status(200).json({ message: 'Cuenta eliminada exitosamente (Auth, Perfil y Carrito).' });
 
     } catch (e) {
-        console.error('Error en la tarea admin:', e.message);
+        console.error('Error en el endpoint /eliminar-cuenta:', e);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
 
-// Iniciar el servidor
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Backend corriendo en puerto ${PORT}`));
+// ... (Inicio del servidor)

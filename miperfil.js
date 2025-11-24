@@ -636,6 +636,24 @@ document.addEventListener('DOMContentLoaded', function() {
              });
         }
     }
+
+    // miperfil.js (En Vercel)
+const RAILWAY_API_URL = 'victorem18kkk-production-6e34.up.railway.app'; 
+// ...
+
+async function eliminarCuenta(user) {
+    // ...
+    const response = await fetch(`${RAILWAY_API_URL}/api/tarea-admin/eliminar-cuenta`, {
+        method: 'POST', // <-- Método HTTP que envías al backend
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: user.id // <-- Los datos que envías
+        })
+    });
+    // ...
+}
     
     // Inicializar la carga de la página
     checkAuthStatus();
