@@ -654,6 +654,33 @@ async function eliminarCuenta(user) {
     });
     // ...
 }
+
+// index.js (En tu Backend de Railway)
+
+const express = require('express');
+const cors = require('cors'); // <-- Importar CORS
+const app = express();
+
+// 1. CONFIGURACIÓN CORS (ESENCIAL)
+// Reemplaza 'https://tu-dominio-de-vercel.vercel.app' con el dominio real de tu frontend
+const allowedOrigins = ['http://localhost:3001', 'https://victorem-18-k.vercel.app']; 
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('No permitido por CORS'))
+    }
+  }
+}
+
+app.use(cors(corsOptions)); // <-- Aplica la política CORS
+app.use(express.json());   // Para poder leer el body JSON
+
+// ... (Aquí van tus rutas, incluyendo /api/tarea-admin/eliminar-cuenta)
+
+// ...
     
     // Inicializar la carga de la página
     checkAuthStatus();
